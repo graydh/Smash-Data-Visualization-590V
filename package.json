@@ -1,0 +1,27 @@
+{
+  "name": "smash-data-visualization-590v",
+  "version": "1.0.0",
+  "description": "Smash Data Visualization project for COMPSCI 590V",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graydh/Smash-Data-Visualization-590V.git"
+  },
+  "contributors": [
+    "Eli Gukovsky <gukovskye@gmail.com>",
+    "Ayush Sahu <ayushsahu@umass.edu>",
+    "Declan Gray-Mullen <dgraymullen@umass.edu>"
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/graydh/Smash-Data-Visualization-590V/issues"
+  },
+  "homepage": "https://github.com/graydh/Smash-Data-Visualization-590V#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "slp-parser-js": "^4.1.0"
+  }
+}
