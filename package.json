@@ -22,6 +22,8 @@
   "homepage": "https://github.com/graydh/Smash-Data-Visualization-590V#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "mongodb": "^3.5.5",
+    "readline-sync": "^1.4.10",
     "slp-parser-js": "^4.1.0"
   }
 }
