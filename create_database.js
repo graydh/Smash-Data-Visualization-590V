@@ -149,6 +149,7 @@ MongoClient.connect("mongodb://127.0.0.1:27017/", {
 				if (winner === null) {
 					winner = "null";
 					console.warn(`Requires manual intervention: ${filepath}`);
+					// TODO: Detect for two game sets - winner of one game is the winner of the other
 				}
 				let gamedata = {
 					gamenum: parseInt(match[4]),
