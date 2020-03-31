@@ -4,6 +4,10 @@
 	grid-gap: 10px;
 }
 
+#title, #navigation, #options, #visualization {
+	padding: 10px;
+}
+
 #title {
 	background-color: #CCCCCC;
 	grid-column: 1 / span 3;
@@ -27,4 +31,14 @@
 	background-color: #FFFFCC;
 	grid-column: 3;
 	grid-row: 2;
+}
+
+#visualization > svg {
+	border: 1px solid black;
+}
+
+#visualization > svg > text {
+	font-family: sans-serif;
+	font-size: 12pt;
+	dominant-baseline: middle;
 }

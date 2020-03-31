@@ -28,14 +28,12 @@ app.get("/matchup", function(req, res) {
 					$match: {
 						$or: [
 							{
-								"games.winner": "player1",
-								"games.player1.character": req.query.winner,
-								"games.player2.character": req.query.loser,
+								"games.player1.character": req.query.character1,
+								"games.player2.character": req.query.character2,
 							},
 							{
-								"games.winner": "player2",
-								"games.player1.character": req.query.loser,
-								"games.player2.character": req.query.winner,
+								"games.player1.character": req.query.character2,
+								"games.player2.character": req.query.character1,
 							}
 						]
 					}
