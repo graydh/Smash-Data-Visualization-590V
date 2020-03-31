@@ -44,7 +44,16 @@ MongoClient.connect("mongodb://127.0.0.1:27017/", {
 								player1: {
 									bsonType: "object",
 									description: "Data for the SET winner, not game winner",
-									required: ["character", "color", "inputsPerSecond", "tag"],
+									required: [
+										"character",
+										"color",
+										"inputsPerSecond",
+										"openingsPerKill",
+										"damagePerOpening",
+										"neutralWinRatio",
+										"counterHitRatio",
+										"tag"
+									],
 									properties: {
 										character: {
 											bsonType: "string",
@@ -53,7 +62,19 @@ MongoClient.connect("mongodb://127.0.0.1:27017/", {
 											bsonType: "string",
 										},
 										inputsPerSecond: {
-											bsonType: "number",
+											bsonType: ["number", "null"],
+										},
+										openingsPerKill: {
+											bsonType: ["number", "null"],
+										},
+										damagePerOpening: {
+											bsonType: ["number", "null"],
+										},
+										neutralWinRatio: {
+											bsonType: ["number", "null"],
+										},
+										counterHitRatio: {
+											bsonType: ["number", "null"],
 										},
 										tag: {
 											bsonType: "string",
@@ -63,7 +84,16 @@ MongoClient.connect("mongodb://127.0.0.1:27017/", {
 								player2: {
 									bsonType: "object",
 									description: "Data for the SET lower, not game loser",
-									required: ["character", "color", "inputsPerSecond", "tag"],
+									required: [
+										"character",
+										"color",
+										"inputsPerSecond",
+										"openingsPerKill",
+										"damagePerOpening",
+										"neutralWinRatio",
+										"counterHitRatio",
+										"tag"
+									],
 									properties: {
 										character: {
 											bsonType: "string",
@@ -72,7 +102,19 @@ MongoClient.connect("mongodb://127.0.0.1:27017/", {
 											bsonType: "string",
 										},
 										inputsPerSecond: {
-											bsonType: "number",
+											bsonType: ["number", "null"],
+										},
+										openingsPerKill: {
+											bsonType: ["number", "null"],
+										},
+										damagePerOpening: {
+											bsonType: ["number", "null"],
+										},
+										neutralWinRatio: {
+											bsonType: ["number", "null"],
+										},
+										counterHitRatio: {
+											bsonType: ["number", "null"],
 										},
 										tag: {
 											bsonType: "string",
@@ -83,7 +125,7 @@ MongoClient.connect("mongodb://127.0.0.1:27017/", {
 									bsonType: "string",
 								},
 								winner: {
-									bsonType: "string",
+									bsonType: ["string", "null"],
 									description: "Must be 'player1' or 'player2'",
 								},
 								filepath: {
@@ -122,6 +164,7 @@ MongoClient.connect("mongodb://127.0.0.1:27017/", {
 			}
 		}
 		await Promise.all(promises);
+		console.log("Imported all sets");
 	})
 	.then(async () => {
 		console.log("Importing games...");
@@ -146,23 +189,28 @@ MongoClient.connect("mongodb://127.0.0.1:27017/", {
 				if (framesPlayers.find(x => x && x.post.playerIndex === player2index).post.stocksRemaining === 0) {
 					winner = "player1";
 				}
-				if (winner === null) {
-					winner = "null";
-					console.warn(`Requires manual intervention: ${filepath}`);
-					// TODO: Detect for two game sets - winner of one game is the winner of the other
-				}
+				let player1stats = game.getStats().overall.find(x => x && x.playerIndex === player1index);
+				let player2stats = game.getStats().overall.find(x => x && x.playerIndex === player2index);
 				let gamedata = {
 					gamenum: parseInt(match[4]),
 					player1: {
 						character: characters.getCharacterShortName(player1.characterId),
 						color: characters.getCharacterColorName(player1.characterId, player1.characterColor),
-						inputsPerSecond: game.getStats().overall.find(x => x && x.playerIndex === player1index).inputsPerMinute.ratio / 60,
+						inputsPerSecond: player1stats.inputsPerMinute.ratio / 60,
+						openingsPerKill: player1stats.openingsPerKill.ratio,
+						damagePerOpening: player1stats.damagePerOpening.ratio,
+						neutralWinRatio: player1stats.neutralWinRatio.ratio,
+						counterHitRatio: player1stats.counterHitRatio.ratio,
 						tag: player1.nametag,
 					},
 					player2: {
 						character: characters.getCharacterShortName(player2.characterId),
 						color: characters.getCharacterColorName(player2.characterId, player2.characterColor),
-						inputsPerSecond: game.getStats().overall.find(x => x && x.playerIndex === player2index).inputsPerMinute.ratio / 60,
+						inputsPerSecond: player2stats.inputsPerMinute.ratio / 60,
+						openingsPerKill: player2stats.openingsPerKill.ratio,
+						damagePerOpening: player2stats.damagePerOpening.ratio,
+						neutralWinRatio: player2stats.neutralWinRatio.ratio,
+						counterHitRatio: player2stats.counterHitRatio.ratio,
 						tag: player2.nametag,
 					},
 					stage: stages.getStageName(game.getSettings().stageId),
@@ -176,29 +224,68 @@ MongoClient.connect("mongodb://127.0.0.1:27017/", {
 			}
 		};
 		await Promise.all(promises);
+		console.log("Imported all games");
 	})
 	.then(async () => {
+		// Detect for two game sets - winner of one game is the winner of the other
+		console.log("Inferring some non-finished games...");
+		let sets = await db.collection("sets").find({
+			"games": {
+				$size: 2
+			},
+			$or: [
+				{ "games.0.winner": { $type: 10 } },
+				{ "games.1.winner": { $type: 10 } }
+			]
+		});
+		let promises = [];
+		sets.forEach(set => {
+			let game1winner = set.games[0].winner;
+			let game2winner = set.games[1].winner;
+			let setWinner = game1winner === null ? game2winner : game1winner;
+			promises.push(db.collection("sets").updateOne(
+				{ _id: set._id },
+				{
+					$set: {
+						"games.0.winner": setWinner,
+						"games.1.winner": setWinner,
+					}
+				}
+			));
+		});
+		await Promise.all(promises);
+	})
+	.then(async () => {
+		let sets = await db.collection("sets").find({ "games.winner": null });
+		sets.forEach(set => {
+			console.warn(`Requires manual intervention: ${set.tournament}/${set.round}_${set.player1}_${set.player2}`);
+		});
+	})
+	.then(async () => {
+		// Rename players who have changed tags
+		console.log("Renaming players...");
 		let names = [
 			["Huang", "Supermanchunky"],
 			["CrazyKing508", "CrazyKing"],
 			["Mibz", "Migz"],
 			["Amnesiac", "Will"],
 			["Aguitas", "b.water"],
+			["Mysticus", "Gambit"],
 		];
 		for (let name of names) {
 			await db.collection("sets").updateMany(
-				{ player1: name[0] },
-				{ $set: { player1: name[1] } }
+				{ "player1": name[0] },
+				{ $set: { "player1": name[1] } }
 			);
 			await db.collection("sets").updateMany(
-				{ player2: name[0] },
-				{ $set: { player2: name[1] } }
+				{ "player2": name[0] },
+				{ $set: { "player2": name[1] } }
 			);
 		}
 	})
 	.then(() => {
 		console.log("Done");
-		console.log("Don't forget to correct winners!");
+		console.log("Don't forget to correct winners and set fix null sets!");
 	});
 })
 .catch(err => {

@@ -1,7 +1,8 @@
 const readlineSync = require("readline-sync");
 const MongoClient = require("mongodb").MongoClient;
 
-MongoClient.connect("mongodb://127.0.0.1:27017/", {
+// Timeout of 30 minutes. This is to account for the large amount of time needed to correct winners
+MongoClient.connect("mongodb://127.0.0.1:27017/?socketTimeoutMS=1800000", {
    useNewUrlParser: true,
    useUnifiedTopology: true
 })
@@ -17,23 +18,24 @@ MongoClient.connect("mongodb://127.0.0.1:27017/", {
 		"b.water",
 		"Grim",
 		"Miami",
+		"Gambit",
 		"Fruity",
 		"Will",
 		"Mike",
 		"ToffeeMamba",
 		"Primer",
-		"elicik",
 		"Silky",
+		"elicik",
 		"CamBailey",
 		"Mig",
 		"Arcade",
 		"Supermanchunky",
 		"Crow",
-		"Silver",
+		"Silver"
 	]
 	await db.collection("sets").find().forEach(async (set) => {
 		let setWinner = set.games[set.games.length-1].winner;
-		if (setWinner === "null") {
+		if (setWinner === null) {
 			console.warn(`Requires manual intervention: ${set.tournament}/${set.round}_${set.player1}_${set.player2}`);
 			return;
 		}
