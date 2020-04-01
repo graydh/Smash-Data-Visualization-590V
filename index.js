@@ -8,11 +8,14 @@ const app = express();
 let port = process.env.PORT || 3000;
 
 app.get("/allchars", function(req, res) {
-	console.log("Requested: /allchars");
-	res.json(characters.getAllCharacters());
+	console.log("GET: /allchars");
+	let allchars = characters.getAllCharacters();
+	allchars.sort((a, b) => a.name.localeCompare(b.name));
+	res.json(allchars);
 });
 
 app.get("/matchup", function(req, res) {
+	console.log("GET: /matchup");
 	MongoClient.connect("mongodb://127.0.0.1:27017/", {
 		useNewUrlParser: true,
 		useUnifiedTopology: true
