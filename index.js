@@ -54,10 +54,10 @@ app.get("/allplayers", function(req, res) {
 	.catch(err => {
 		console.error(err);
 	});
-})
+});
 
 app.get("/matchup", function(req, res) {
-	console.log("GET: /matchup");
+	console.log("GET: /matchup with params", req.query);
 	MongoClient.connect("mongodb://127.0.0.1:27017/", {
 		useNewUrlParser: true,
 		useUnifiedTopology: true
@@ -130,22 +130,85 @@ app.get("/matchup", function(req, res) {
 	.catch(err => {
 		console.error(err);
 	});
-})
+});
 
-// Request a specific game
-// app.get("/replay", function(req, res) {
-// 	let filename = req.query.filename;
-// 	console.log(`Requested file: ${filename}`);
-// 	let game = new SlippiGame(path.join(__dirname, "replays/", filename));
-// 	let result = {
-// 		"data": {
-// 			"settings": game.getSettings(),
-// 			"frames": game.getFrames(),
-// 			"metadata": game.getMetadata()
-// 		}
-// 	};
-// 	res.send(result);
-// });
+app.get("/playerdata", function(req, res) {
+	console.log("GET: /playerdata with params", req.query);
+	let player = req.query.player;
+	MongoClient.connect("mongodb://127.0.0.1:27017/", {
+		useNewUrlParser: true,
+		useUnifiedTopology: true
+	})
+	.then(client => {
+		let db = client.db("smashdb");
+		return db.collection("sets").aggregate(
+			[
+				{
+					$match: {
+						$or: [
+							{ player1: player },
+							{ player2: player }
+						]
+					}
+				},
+				{
+					$project: {
+						"games": {
+							$map: {
+								"input": "$games",
+								"in": {	
+									"game": {
+										$cond: {
+											if: { $eq: ["$player1", player] },
+											then: "$$this.player1",
+											else: "$$this.player2",
+										}
+									},
+									"stage": "$$this.stage",
+									"winner": {
+										$cond: {
+											if: { $eq: ["$player1", player] },
+											then: { $eq: ["$$this.winner", "player1"] },
+											else: { $eq: ["$$this.winner", "player2"] },
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				{
+					$unwind: "$games"
+				},
+				{
+					$project: {
+						"inputsPerSecond": "$games.game.inputsPerSecond",
+						"openingsPerKill": "$games.game.openingsPerKill",
+						"damagePerOpening": "$games.game.damagePerOpening",
+						"neutralWinRatio": "$games.game.neutralWinRatio",
+						"counterHitRatio": "$games.game.counterHitRatio",
+						"tag": "$games.game.tag",
+						"character": {
+							"character": "$games.game.character",
+							"color": "$games.game.color",
+						},
+						"stage": "$games.stage",
+						"winner": "$games.winner"
+					}
+				}
+			]
+		);
+	})
+	.then(result => {
+		return result.toArray();
+	})
+	.then(result => {
+		res.send(result);
+	})
+	.catch(err => {
+		console.error(err);
+	});
+});
 
 app.use(express.static(path.join(__dirname, "client")));
 app.listen(port);
