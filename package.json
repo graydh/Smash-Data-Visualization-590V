@@ -4,7 +4,11 @@
   "description": "Smash Data Visualization project for COMPSCI 590V",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "server": "node index.js",
+    "createdatabase": "node create_database.js",
+    "correctwinners": "node correct_winners.js",
+    "backup": "mongodump --uri=\"mongodb://127.0.0.1:27017/smashdb\"",
+    "restore": "mongorestore --uri=\"mongodb://127.0.0.1:27017/smashdb\" dump/"
   },
   "repository": {
     "type": "git",
