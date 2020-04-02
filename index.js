@@ -14,6 +14,48 @@ app.get("/allchars", function(req, res) {
 	res.json(allchars);
 });
 
+app.get("/allplayers", function(req, res) {
+	console.log("GET: /allplayers");
+	MongoClient.connect("mongodb://127.0.0.1:27017/", {
+		useNewUrlParser: true,
+		useUnifiedTopology: true
+	})
+	.then(client => {
+		let db = client.db("smashdb");
+		return db.collection("sets").aggregate(
+			[
+				{
+					$group: {
+						"_id": null,
+						"player1": {
+							$addToSet: "$player1"
+						},
+						"player2": {
+							$addToSet: "$player2"
+						},
+					}
+				},
+				{
+					$project: {
+						"players": {
+							$setUnion: ["$player1", "$player2"]
+						}
+					}
+				}
+			]
+		);
+	})
+	.then(result => {
+		return result.toArray();
+	})
+	.then(result => {
+		res.send(result[0].players);
+	})
+	.catch(err => {
+		console.error(err);
+	});
+})
+
 app.get("/matchup", function(req, res) {
 	console.log("GET: /matchup");
 	MongoClient.connect("mongodb://127.0.0.1:27017/", {
