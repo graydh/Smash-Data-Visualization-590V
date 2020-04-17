@@ -49,7 +49,12 @@ app.get("/allplayers", function(req, res) {
 		return result.toArray();
 	})
 	.then(result => {
-		res.send(result[0].players);
+		result = result[0].players;
+		result.sort((a,b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+		return result;
+	})
+	.then(result => {
+		res.send(result);
 	})
 	.catch(err => {
 		console.error(err);
