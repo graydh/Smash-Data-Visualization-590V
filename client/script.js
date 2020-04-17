@@ -18,8 +18,8 @@ d3.select("#nav-players").on("click", function() {
 
 
 	let renderer = function() {
-		// let character1 = d3.select("#options-character1").property("value");
-		// let character2 = d3.select("#options-character2").property("value");
+		let player = d3.select("#options-player").property("value");
+		let metric = d3.select("#options-metric").property("value");
 		// d3.json(`/matchup?character1=${character1}&character2=${character2}`)
 		// .then(function (json) {
 
@@ -126,6 +126,33 @@ d3.select("#nav-players").on("click", function() {
 				return d;
 			});
 		playerdropdown.property("value", "elicik");
+		options.append("br");
+	});
+
+	d3.json("/playerdata?player=Silver")
+	.then(function (json){
+		let options = d3.select("#options");
+		options.append("label")
+			.text("Metric: ")
+			.attr("for", "options-metric");
+		options.append("br");
+		let metricdropdown = options.append("select")
+			.attr("id", "options-metric")
+			.on("change", renderer);
+
+		let data_keys = Object.keys(json[0]).slice(1,6);
+
+		metricdropdown.selectAll("option")
+			.data(data_keys)
+			.enter()
+			.append("option")
+			.attr("value", function (d) {
+				return d;
+			})
+			.text(function (d) {
+				return d;
+			});
+		metricdropdown.property("value", "inputsPerSecond");
 	})
 	.then(renderer);
 });
