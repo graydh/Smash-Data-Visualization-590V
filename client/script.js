@@ -127,11 +127,6 @@ d3.select("#nav-players").on("click", function() {
 			});
 		playerdropdown.property("value", "elicik");
 		options.append("br");
-	});
-
-	d3.json("/playerdata?player=Silver")
-	.then(function (json){
-		let options = d3.select("#options");
 		options.append("label")
 			.text("Metric: ")
 			.attr("for", "options-metric");
@@ -139,18 +134,38 @@ d3.select("#nav-players").on("click", function() {
 		let metricdropdown = options.append("select")
 			.attr("id", "options-metric")
 			.on("change", renderer);
-
-		let data_keys = Object.keys(json[0]).slice(1,6);
+		let metrics = [
+			{
+				label: "Inputs Per Second",
+				value: "inputsPerSecond"
+			},
+			{
+				label: "Openings Per Kill",
+				value: "openingsPerKill"
+			},
+			{
+				label: "Damage Per Opening",
+				value: "damagePerOpening"
+			},
+			{
+				label: "Neutral Win Ratio",
+				value: "neutralWinRatio"
+			},
+			{
+				label: "Counter Hit Ratio",
+				value: "counterHitRatio"
+			}
+		];
 
 		metricdropdown.selectAll("option")
-			.data(data_keys)
+			.data(metrics)
 			.enter()
 			.append("option")
 			.attr("value", function (d) {
-				return d;
+				return d.value;
 			})
 			.text(function (d) {
-				return d;
+				return d.label;
 			});
 		metricdropdown.property("value", "inputsPerSecond");
 	})
