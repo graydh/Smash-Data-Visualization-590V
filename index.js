@@ -2,7 +2,8 @@ const path = require("path");
 const express = require("express");
 const fetch = require("node-fetch");
 const { characters, default: SlippiGame} = require("slp-parser-js");
-const MongoClient = require("mongodb").MongoClient;
+const mongodb = require("mongodb");
+const MongoClient = mongodb.MongoClient;
 
 const app = express();
 
@@ -216,18 +217,71 @@ app.get("/playerdata", function(req, res) {
 	});
 });
 
+app.get("/gamedata", function(req, res) {
+	console.log("GET: /gamedata with params", req.query);
+	let id = req.query.id;
+	let player1 = req.query.player1;
+	let player2 = req.query.player2;
+	let player = req.query.player;
+	MongoClient.connect("mongodb://127.0.0.1:27017/", {
+		useNewUrlParser: true,
+		useUnifiedTopology: true
+	})
+	.then(client => {
+		let db = client.db("smashdb");
+		if (id) {
+			return db.collection("sets").find({ _id: new mongodb.ObjectId(id) });
+		}
+		if (player1 && player2) {
+			return db.collection("sets").find({
+				$or: [
+					{
+						"player1": player1,
+						"player2": player2,
+					},
+					{
+						"player1": player2,
+						"player2": player1,
+					},
+				]
+			});
+		}
+		if (player1 || player2 || player) {
+			player = player1 || player2 || player;
+			return db.collection("sets").find({
+				$or: [
+					{ "player1": player },
+					{ "player2": player }
+				]
+			});
+		}
+		return db.collection("sets").find();
+	})
+	.then(result => {
+		return result.toArray();
+	})
+	.then(result => {
+		res.send(result);
+	})
+	.catch(err => {
+		console.error(err);
+	});
+});
+
 app.get("/head2head", function(req, res) {
 	console.log("GET: /head2head");
-	let allsets = async function() {
-		let client = await MongoClient.connect("mongodb://127.0.0.1:27017/", {
-			useNewUrlParser: true,
-			useUnifiedTopology: true
-		});
+	MongoClient.connect("mongodb://127.0.0.1:27017/", {
+		useNewUrlParser: true,
+		useUnifiedTopology: true
+	})
+	.then(client => {
 		let db = client.db("smashdb");
-		let query = await db.collection("sets").find();
-		return query.toArray();
-	};
-	let head2head = async function() {
+		return db.collection("sets").find();
+	})
+	.then(result => {
+		return result.toArray();
+	})
+	.then(async (sets) => {
 		let ranks = [
 			"Price",
 			"Migz",
@@ -275,7 +329,6 @@ app.get("/head2head", function(req, res) {
 			}
 			matchups.push(row);
 		}
-		let sets = await allsets();
 		for (let set of sets) {
 			player1 = allplayers.indexOf(set.player1);
 			player2 = allplayers.indexOf(set.player2);
@@ -290,8 +343,7 @@ app.get("/head2head", function(req, res) {
 			}
 		}
 		return { matchups, labels: allplayers };
-	}
-	head2head()
+	})
 	.then(result => {
 		res.send(result);
 	})
