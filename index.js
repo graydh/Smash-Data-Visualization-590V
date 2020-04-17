@@ -1,5 +1,6 @@
 const path = require("path");
 const express = require("express");
+const fetch = require("node-fetch");
 const { characters, default: SlippiGame} = require("slp-parser-js");
 const MongoClient = require("mongodb").MongoClient;
 
@@ -207,6 +208,90 @@ app.get("/playerdata", function(req, res) {
 	.then(result => {
 		return result.toArray();
 	})
+	.then(result => {
+		res.send(result);
+	})
+	.catch(err => {
+		console.error(err);
+	});
+});
+
+app.get("/head2head", function(req, res) {
+	console.log("GET: /head2head");
+	let allsets = async function() {
+		let client = await MongoClient.connect("mongodb://127.0.0.1:27017/", {
+			useNewUrlParser: true,
+			useUnifiedTopology: true
+		});
+		let db = client.db("smashdb");
+		let query = await db.collection("sets").find();
+		return query.toArray();
+	};
+	let head2head = async function() {
+		let ranks = [
+			"Price",
+			"Migz",
+			"wub",
+			"handog",
+			"Shee",
+			"slacks",
+			"b.water",
+			"Grim",
+			"Miami",
+			"Gambit",
+			"Fruity",
+			"Will",
+			"Mike",
+			"ToffeeMamba",
+			"Primer",
+			"Silky",
+			"elicik",
+			"CamBailey",
+			"McGinness",
+			"Jester",
+			"Mig",
+			"Arcade",
+			"Supermanchunky",
+			"Crow",
+			"Silver"
+		];
+		let allplayers = await fetch(`http://localhost:${port}/allplayers`);
+		allplayers = await allplayers.json();
+		allplayers.sort((a,b) => {
+			indexA = ranks.indexOf(a);
+			indexB = ranks.indexOf(b);
+			if (indexA === -1 && indexB === -1) {
+				return a.toLowerCase().localeCompare(b.toLowerCase());
+			}
+			else {
+				return indexB - indexA;
+			}
+		});
+		let matchups = [];
+		for (let player1 of allplayers) {
+			let row = [];
+			for (let player2 of allplayers) {
+				row.push([0,0]);
+			}
+			matchups.push(row);
+		}
+		let sets = await allsets();
+		for (let set of sets) {
+			player1 = allplayers.indexOf(set.player1);
+			player2 = allplayers.indexOf(set.player2);
+			winner = set.games[set.games.length-1].winner;
+			if (winner === "player1") {
+				matchups[player1][player2][0] += 1;
+				matchups[player2][player1][1] += 1;
+			}
+			else {				
+				matchups[player1][player2][1] += 1;
+				matchups[player2][player1][0] += 1;
+			}
+		}
+		return { matchups, labels: allplayers };
+	}
+	head2head()
 	.then(result => {
 		res.send(result);
 	})
