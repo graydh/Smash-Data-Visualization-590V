@@ -139,6 +139,55 @@ app.get("/matchup", function(req, res) {
 	});
 });
 
+app.get("/averages", function(req, res) {
+	console.log("GET: /averages with params", req.query);
+	let metric = req.query.metric;
+	MongoClient.connect("mongodb://127.0.0.1:27017/", {
+		useNewUrlParser: true,
+		useUnifiedTopology: true
+	})
+	.then(client => {
+		let db = client.db("smashdb");
+		return db.collection("sets").find();
+	})
+	.then(result => {
+		return result.toArray();
+	})
+	.then(query => {
+		let totals = {};
+		let counts = {};
+		for (let set of query) {
+			for (let game of set.games) {
+				if (game.player1[metric] !== null) {
+					totals[set.player1] = game.player1[metric] + (totals[set.player1] || 0);
+					counts[set.player1] = 1 + (counts[set.player1] || 0);
+				}
+				if (game.player2[metric] !== null) {
+					totals[set.player2] = game.player2[metric] + (totals[set.player2] || 0);
+					counts[set.player2] = 1 + (counts[set.player2] || 0);
+				}
+			}
+		}
+		let result = [];
+		for (let key in totals) {
+			if (totals.hasOwnProperty(key)) {
+				result.push({
+					name: key,
+					avg: totals[key] / counts[key]
+				});
+			}
+		}
+		result.sort((a,b) => b.avg - a.avg);
+		return result;
+	})
+	.then(result => {
+		res.send(result);
+	})
+	.catch(err => {
+		console.error(err);
+	});
+});
+
 app.get("/playerdata", function(req, res) {
 	console.log("GET: /playerdata with params", req.query);
 	let player = req.query.player;
