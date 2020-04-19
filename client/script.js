@@ -21,21 +21,80 @@ d3.select("#nav-players").on("click", function () {
 	let renderer = function () {
 		let player = d3.select("#options-player").property("value");
 		let metric = d3.select("#options-metric").property("value");
+
 		console.log(players);
-		let playerObject = new Object();
+		let playerArray = [];
 
 		for (let playerName of players) {
 			d3.json(`/playerdata?player=${playerName}`)
 				.then(function (json) {
-					playerObject[playerName] = new Object();
-
+					playerObject = new Object();
+					playerObject["player"] = playerName;
+					let games = 0;
+					let total_metric = 0;
 					for (let game of json) {
 						if (game[metric] !== null)
-							playerObject[playerName][metric] += game[metric];
+							games += 1;
+							total_metric += game[metric];
 					}
+					playerObject[metric] = total_metric/games;
+					
+					playerArray.push(playerObject);
 				});
 		}
-		console.log(playerObject);
+
+		console.log(playerArray);
+
+
+		let xScale = d3.scaleLinear()
+			.domain([0, 12])
+			.range([0, graphw - 2 * padding]);
+
+		let yScale = d3.scaleBand()
+			.domain(player)
+			.rangeRound([0, h])
+			.paddingInner(padding / h)
+			.paddingOuter(padding / h * 4);
+
+		let barHeight = (h - padding * (players.length + 1)) / players.length;
+
+		
+		g_graph.selectAll(".left")
+			.data(playerArray)
+			.enter()
+			.append("rect")
+			.attr("class", "left");
+		g_graph.selectAll(".left")
+			.data(playerArray)
+			.transition()
+			.attr("x", padding)
+			.attr("y", function (d, i) {
+				return yScale(d.player);
+			})
+			.attr("width", function (d, i) {
+				return xScale(d[metric]);
+			})
+			.attr("height", barHeight)
+			.attr("fill", function (d, i) {
+				return "hsl(120, 30%, 50%)"
+			});
+		g_text.selectAll("text")
+			.data(playerArray)
+			.enter()
+			.append("text")
+			.style("dominant-baseline", "middle")
+			.style("text-anchor", "end");
+		g_text.selectAll("text")
+			.data(playerArray)
+			.transition()
+			.attr("x", textw)
+			.attr("y", function (d, i) {
+				return yScale(d.player) + barHeight / 2;
+			})
+			.text(function (d, i) {
+				return `${d.player}`;
+			});
+
 	};
 
 	d3.json("/allplayers")
