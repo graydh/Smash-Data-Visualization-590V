@@ -1,6 +1,8 @@
 
 d3.select("#nav-games").on("click", function () {
 
+	d3.select("#options").html("");
+	d3.select("#visualization").html("");
 	const tableDiv = d3.select('#visualization').append('div').attr('id', 'tableContainer').attr('class', 'well');
 	let options = d3.select("#options");
 	options.append("label")
@@ -165,5 +167,4 @@ d3.select("#nav-games").on("click", function () {
 
 		return table;
 	}
-
 });
