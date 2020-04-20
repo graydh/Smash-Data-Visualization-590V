@@ -41,3 +41,38 @@
 	font-family: sans-serif;
 	font-size: 12pt;
 }
+
+#head2head {
+	table-layout: fixed;
+	width: fit-content;
+	box-sizing: border-box;
+}
+
+#head2head td {
+	text-align: center;
+	width: 70px;
+	height: 70px;
+	font-size: 20px;
+}
+
+#head2head th {
+	text-align: center;
+	width: 70px;
+	font-size: 14px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+#head2head-movement {
+	table-layout: fixed;
+	width: fit-content;
+	box-sizing: border-box;	
+}
+
+#head2head-movement td {
+	width: 40px;
+	height: 40px;
+	border: 1px solid black;
+	text-align: center;
+	font-size: 30px;
+}
