@@ -163,6 +163,7 @@ d3.select("#nav-players").on("click", function () {
 		playerdropdown.property("value", "elicik");
 
 		options.append("br");
+		options.append("br");
 		options.append("label")
 			.text("Metric: ")
 			.attr("for", "options-metric");
@@ -204,6 +205,7 @@ d3.select("#nav-players").on("click", function () {
 			});
 		metricdropdown.property("value", "inputsPerSecond");
 
+		options.append("br");
 		options.append("br");
 		options.append("label")
 			.text("Order: ")

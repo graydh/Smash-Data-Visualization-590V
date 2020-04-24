@@ -127,6 +127,7 @@ d3.select("#nav-matchups").on("click", function () {
 				});
 			character1dropdown.property("value", "Fox");
 			options.append("br");
+			options.append("br");
 			options.append("label")
 				.text("Character 2: ")
 				.attr("for", "options-character2");

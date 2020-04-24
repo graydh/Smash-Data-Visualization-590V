@@ -1,4 +1,3 @@
-
 d3.select("#nav-games").on("click", function () {
 
 	d3.select("#options").html("");
@@ -108,6 +107,7 @@ d3.select("#nav-games").on("click", function () {
 		.attr("id", "options-player1")
 		.on("change", renderSets);
 	options.append("br");
+	options.append("br");
 
 	options.append("label")
 		.text("Player 2:")
@@ -117,6 +117,7 @@ d3.select("#nav-games").on("click", function () {
 		.attr("id", "options-player2")
 		.on("change", renderSets);
 	options.append("br");
+	options.append("br");
 
 	options.append("label")
 		.text("Set:")
@@ -125,6 +126,7 @@ d3.select("#nav-games").on("click", function () {
 	options.append("select")
 		.attr("id", "options-set")
 		.on("change", renderGames);
+	options.append("br");
 	options.append("br");
 
 	options.append("label")
