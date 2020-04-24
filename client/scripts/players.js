@@ -28,82 +28,80 @@ d3.select("#nav-players").on("click", function () {
 
 		let playerArray = [];
 		d3.json(`/averages?metric=${metric}`)
-			.then(function (json) {
-				let playerArray = json;
+		.then(function (json) {
+			let playerArray = json;
 
-				//yScale Domain Ordering
-				let orders = {
-	    			Alphabetical: function(a,b){return a.name.localeCompare(b.name) },
-	    			Ascending: function(a, b){return a.avg - b.avg},
-	   				Descending: function(a, b){return b.avg - a.avg}
-	  			};
+			//yScale Domain Ordering
+			let orders = {
+				Alphabetical: function(a,b){return a.name.localeCompare(b.name) },
+				Ascending: function(a, b){return a.avg - b.avg},
+				Descending: function(a, b){return b.avg - a.avg}
+			};
 
-				//convert object to needed order
-				playerArray.sort(orders[order]);
-				let sorted_players = playerArray.map(a => a.name);
-				
-				//needed for xScale domain
-				let dataMax = Math.max(...playerArray.map(x => x.avg));
-				// let dataMin = Math.min(...playerArray.map(x => x.avg));
-				let dataMin = 0;
+			//convert object to needed order
+			playerArray.sort(orders[order]);
+			let sorted_players = playerArray.map(a => a.name);
 
-				let xScale = d3.scaleLinear()
-					.domain([dataMin, dataMax])
-					.range([0, graphw - 2 * padding]);
+			//needed for xScale domain
+			let dataMax = Math.max(...playerArray.map(x => x.avg));
+			// let dataMin = Math.min(...playerArray.map(x => x.avg));
+			let dataMin = 0;
 
-				let yScale = d3.scaleBand()
-					.domain(sorted_players)
-					.rangeRound([0, h])
-					.paddingInner(padding / h)
-					.paddingOuter(padding / h * 4)
-					.align(0.5);
+			let xScale = d3.scaleLinear()
+				.domain([dataMin, dataMax])
+				.range([0, graphw - 2 * padding]);
 
-				let barHeight = (h - padding * (players.length + 1)) / players.length;
-				
-				g_graph.selectAll(".bar")
-					.data(playerArray)
-					.enter()
-					.append("rect")
-					.attr("class", "bar");
-				g_graph.selectAll(".bar")
-					.data(playerArray)
-					.transition()
-					.attr("x", 0)
-					.attr("y", function (d, i) {
-						return yScale(d.name);
-					})
-					.attr("width", function (d, i) {
-						return xScale(d.avg);
-					})
-					.attr("height", barHeight)
-					.attr("fill", function (d, i) {
-						if(d.name === player){
-							return "hsl(360, 80%, 50%)"
-						}
-						return "hsl(120, 30%, 50%)"
-					});
-				g_text.selectAll("text")
-					.data(playerArray)
-					.enter()
-					.append("text")
-					.style("dominant-baseline", "middle")
-					.style("text-anchor", "end")
-					.style("font-size", "7px");
-				g_text.selectAll("text")
-					.data(playerArray)
-					.transition()
-					.attr("x", textw - padding)
-					.attr("y", function (d, i) {
-						return yScale(d.name) + barHeight / 2;
-					})
-					.text(function (d, i) {
-						return `${d.name}`;
-					});
-				g_graph.select("#xAxis")
-      				.call(d3.axisBottom(xScale));
+			let yScale = d3.scaleBand()
+				.domain(sorted_players)
+				.rangeRound([0, h])
+				.paddingInner(padding / h)
+				.paddingOuter(padding / h * 4)
+				.align(0.5);
 
-			});
+			let barHeight = (h - padding * (players.length + 1)) / players.length;
 
+			g_graph.selectAll(".bar")
+				.data(playerArray)
+				.enter()
+				.append("rect")
+				.attr("class", "bar");
+			g_graph.selectAll(".bar")
+				.data(playerArray)
+				.transition()
+				.attr("x", 0)
+				.attr("y", function (d, i) {
+					return yScale(d.name);
+				})
+				.attr("width", function (d, i) {
+					return xScale(d.avg);
+				})
+				.attr("height", barHeight)
+				.attr("fill", function (d, i) {
+					if(d.name === player){
+						return "hsl(360, 80%, 50%)"
+					}
+					return "hsl(120, 30%, 50%)"
+				});
+			g_text.selectAll("text")
+				.data(playerArray)
+				.enter()
+				.append("text")
+				.style("dominant-baseline", "middle")
+				.style("text-anchor", "end")
+				.style("font-size", "7px");
+			g_text.selectAll("text")
+				.data(playerArray)
+				.transition()
+				.attr("x", textw - padding)
+				.attr("y", function (d, i) {
+					return yScale(d.name) + barHeight / 2;
+				})
+				.text(function (d, i) {
+					return `${d.name}`;
+				});
+			g_graph.select("#xAxis")
+				.call(d3.axisBottom(xScale));
+		});
 	};
 
 	d3.json("/allplayers")
@@ -171,8 +169,6 @@ d3.select("#nav-players").on("click", function () {
 				return d.label;
 			});
 		metricdropdown.property("value", "inputsPerSecond");
-
-
 
 		options.append("br");
 		options.append("label")
