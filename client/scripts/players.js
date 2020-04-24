@@ -54,8 +54,8 @@ d3.select("#nav-players").on("click", function () {
 				.domain(sorted_players)
 				.rangeRound([0, h])
 				.paddingInner(0.1)
-				.paddingOuter(0.05)
-				.align(0.5);
+				.paddingOuter(0.1)
+				.align(0.75);
 
 			g_graph.selectAll(".bar")
 				.data(playerArray)
