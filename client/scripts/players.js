@@ -4,7 +4,7 @@ d3.select("#nav-players").on("click", function () {
 	let textw = 100;
 	let graphw = 500;
 	let w = textw + graphw;
-	let h = 400;
+	let h = 600;
 	let padding = 5;
 	let players = [];
 	let svg = d3.select("#visualization")
@@ -16,10 +16,9 @@ d3.select("#nav-players").on("click", function () {
 	let g_graph = svg
 		.append("g")
 		.attr("transform", `translate(${textw}, 0)`);
-	g_graph.append("g")
+	svg.append("g")
 		.attr("id", "xAxis")
-		.attr("transform", "translate(0,-1)"); //move xAxis Up 1 pixel
-
+		.attr("transform", `translate(${textw}, -1)`);
 
 	let renderer = function () {
 		let player = d3.select("#options-player").property("value");
@@ -54,11 +53,9 @@ d3.select("#nav-players").on("click", function () {
 			let yScale = d3.scaleBand()
 				.domain(sorted_players)
 				.rangeRound([0, h])
-				.paddingInner(padding / h)
-				.paddingOuter(padding / h * 4)
+				.paddingInner(0.1)
+				.paddingOuter(0.05)
 				.align(0.5);
-
-			let barHeight = (h - padding * (players.length + 1)) / players.length;
 
 			g_graph.selectAll(".bar")
 				.data(playerArray)
@@ -75,7 +72,7 @@ d3.select("#nav-players").on("click", function () {
 				.attr("width", function (d, i) {
 					return xScale(d.avg);
 				})
-				.attr("height", barHeight)
+				.attr("height", yScale.bandwidth())
 				.attr("fill", function (d, i) {
 					if(d.name === player){
 						return "hsl(360, 80%, 50%)"
@@ -88,19 +85,42 @@ d3.select("#nav-players").on("click", function () {
 				.append("text")
 				.style("dominant-baseline", "middle")
 				.style("text-anchor", "end")
-				.style("font-size", "7px");
+				.style("font-size", yScale.bandwidth());
 			g_text.selectAll("text")
 				.data(playerArray)
 				.transition()
 				.attr("x", textw - padding)
 				.attr("y", function (d, i) {
-					return yScale(d.name) + barHeight / 2;
+					return yScale(d.name) + yScale.bandwidth() / 2;
 				})
 				.text(function (d, i) {
 					return `${d.name}`;
 				});
-			g_graph.select("#xAxis")
+			svg.select("#xAxis")
 				.call(d3.axisBottom(xScale));
+
+			let zoomUpdater = function() {
+				yScale.range([0, h].map(d => d3.event.transform.applyY(d)));
+				g_graph.selectAll(".bar")
+					.attr("y", function (d, i) {
+						return yScale(d.name);
+					})
+					.attr("height", function(d) {
+						return yScale.bandwidth();
+					});
+				g_text.selectAll("text")
+					.attr("y", function (d, i) {
+						return yScale(d.name) + yScale.bandwidth() / 2;
+					})
+					.style("font-size", yScale.bandwidth());
+			}
+
+			let zoom = d3.zoom()
+				.scaleExtent([1, 5])
+				.translateExtent([[0, 0], [w, h]])
+				.extent([[0, 0], [w, h]])
+				.on("zoom", zoomUpdater);
+			svg.call(zoom);
 		});
 	};
 
