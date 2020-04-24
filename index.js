@@ -282,18 +282,80 @@ app.get("/gamedata", function(req, res) {
 			return db.collection("sets").find({ _id: new mongodb.ObjectId(id) });
 		}
 		if (player1 && player2) {
-			return db.collection("sets").find({
-				$or: [
-					{
-						"player1": player1,
-						"player2": player2,
-					},
-					{
-						"player1": player2,
-						"player2": player1,
-					},
-				]
-			});
+			return db.collection("sets").aggregate([
+				{
+					$match: {
+						$or: [
+							{
+								"player1": player1,
+								"player2": player2,
+							},
+							{
+								"player1": player2,
+								"player2": player1,
+							},
+						]
+					}
+				},
+				{
+					$project: {
+						"_id": 1,
+						"round": 1,
+						"tournament": 1,
+						"player1": {
+							$cond: {
+								if: { $eq: ["$player1", player1]},
+								then: "$player1",
+								else: "$player2"
+							}
+						},
+						"player2": {
+							$cond: {
+								if: { $eq: ["$player1", player1]},
+								then: "$player2",
+								else: "$player1"
+							}
+						},
+						"games": {
+							$map: {
+								"input": "$games",
+								"in": {	
+									"player1": {
+										$cond: {
+											if: { $eq: ["$player1", player1] },
+											then: "$$this.player1",
+											else: "$$this.player2",
+										}
+									},
+									"player2": {
+										$cond: {
+											if: { $eq: ["$player1", player1] },
+											then: "$$this.player2",
+											else: "$$this.player1",
+										}
+									},
+									"winner": {
+										$cond: {
+											if: { $eq: ["$player1", player1] },
+											then: "$$this.winner",
+											else: {
+												$cond: {
+													if: { $eq: ["$$this.winner", "player1"] },
+													then: "player2",
+													else: "player1",
+												}
+											},
+										}
+									},
+									"gamenum": "$$this.gamenum",
+									"stage": "$$this.stage",
+									"filepath": "$$this.filepath",
+								}
+							}
+						}
+					}
+				}
+			]);
 		}
 		if (player1 || player2 || player) {
 			player = player1 || player2 || player;
