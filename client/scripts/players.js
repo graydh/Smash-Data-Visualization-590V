@@ -17,7 +17,7 @@ d3.select("#nav-players").on("click", function () {
 		.append("g")
 		.attr("transform", `translate(${textw}, 0)`);
 	g_graph.append("g")
-		.attr("class", "xAxis")
+		.attr("id", "xAxis")
 		.attr("transform", "translate(0,-1)"); //move xAxis Up 1 pixel
 
 
@@ -42,10 +42,10 @@ d3.select("#nav-players").on("click", function () {
 				playerArray.sort(orders[order]);
 				let sorted_players = playerArray.map(a => a.name);
 				
-
 				//needed for xScale domain
-				let dataMax = playerArray.reduce((a,b)=>a.avg>b.avg?a:b).avg;
-				let dataMin = Math.floor(playerArray.reduce((a,b)=>a.avg<b.avg?a:b).avg);
+				let dataMax = Math.max(...playerArray.map(x => x.avg));
+				// let dataMin = Math.min(...playerArray.map(x => x.avg));
+				let dataMin = 0;
 
 				let xScale = d3.scaleLinear()
 					.domain([dataMin, dataMax])
@@ -55,19 +55,20 @@ d3.select("#nav-players").on("click", function () {
 					.domain(sorted_players)
 					.rangeRound([0, h])
 					.paddingInner(padding / h)
-					.paddingOuter(padding / h * 4);
+					.paddingOuter(padding / h * 4)
+					.align(0.5);
 
 				let barHeight = (h - padding * (players.length + 1)) / players.length;
 				
-				g_graph.selectAll(".left")
+				g_graph.selectAll(".bar")
 					.data(playerArray)
 					.enter()
 					.append("rect")
-					.attr("class", "left");
-				g_graph.selectAll(".left")
+					.attr("class", "bar");
+				g_graph.selectAll(".bar")
 					.data(playerArray)
 					.transition()
-					.attr("x", padding)
+					.attr("x", 0)
 					.attr("y", function (d, i) {
 						return yScale(d.name);
 					})
@@ -91,14 +92,14 @@ d3.select("#nav-players").on("click", function () {
 				g_text.selectAll("text")
 					.data(playerArray)
 					.transition()
-					.attr("x", textw)
+					.attr("x", textw - padding)
 					.attr("y", function (d, i) {
 						return yScale(d.name) + barHeight / 2;
 					})
 					.text(function (d, i) {
 						return `${d.name}`;
 					});
-				g_graph.select(".xAxis")
+				g_graph.select("#xAxis")
       				.call(d3.axisBottom(xScale));
 
 			});
@@ -106,100 +107,98 @@ d3.select("#nav-players").on("click", function () {
 	};
 
 	d3.json("/allplayers")
-		.then(function (json) {
-			players = json;
-			let options = d3.select("#options");
-			options.append("label")
-				.text("Player: ")
-				.attr("for", "options-player");
-			options.append("br");
+	.then(function (json) {
+		players = json;
+		let options = d3.select("#options");
+		options.append("label")
+			.text("Player: ")
+			.attr("for", "options-player");
+		options.append("br");
 
-			let playerdropdown = options.append("select")
-				.attr("id", "options-player")
-				.on("change", renderer);
-			playerdropdown.selectAll("option")
-				.data(json)
-				.enter()
-				.append("option")
-				.attr("value", function (d) {
-					return d;
-				})
-				.text(function (d) {
-					return d;
-				});
-			playerdropdown.property("value", "elicik");
+		let playerdropdown = options.append("select")
+			.attr("id", "options-player")
+			.on("change", renderer);
+		playerdropdown.selectAll("option")
+			.data(json)
+			.enter()
+			.append("option")
+			.attr("value", function (d) {
+				return d;
+			})
+			.text(function (d) {
+				return d;
+			});
+		playerdropdown.property("value", "elicik");
+
+		options.append("br");
+		options.append("label")
+			.text("Metric: ")
+			.attr("for", "options-metric");
+		options.append("br");
+		let metricdropdown = options.append("select")
+			.attr("id", "options-metric")
+			.on("change", renderer);
+		let metrics = [
+			{
+				label: "Inputs Per Second",
+				value: "inputsPerSecond"
+			},
+			{
+				label: "Openings Per Kill",
+				value: "openingsPerKill"
+			},
+			{
+				label: "Damage Per Opening",
+				value: "damagePerOpening"
+			},
+			{
+				label: "Neutral Win Ratio",
+				value: "neutralWinRatio"
+			},
+			{
+				label: "Counter Hit Ratio",
+				value: "counterHitRatio"
+			}
+		];
+		metricdropdown.selectAll("option")
+			.data(metrics)
+			.enter()
+			.append("option")
+			.attr("value", function (d) {
+				return d.value;
+			})
+			.text(function (d) {
+				return d.label;
+			});
+		metricdropdown.property("value", "inputsPerSecond");
 
 
 
-			options.append("br");
-			options.append("label")
-				.text("Metric: ")
-				.attr("for", "options-metric");
-			options.append("br");
-			let metricdropdown = options.append("select")
-				.attr("id", "options-metric")
-				.on("change", renderer);
-			let metrics = [
-				{
-					label: "Inputs Per Second",
-					value: "inputsPerSecond"
-				},
-				{
-					label: "Openings Per Kill",
-					value: "openingsPerKill"
-				},
-				{
-					label: "Damage Per Opening",
-					value: "damagePerOpening"
-				},
-				{
-					label: "Neutral Win Ratio",
-					value: "neutralWinRatio"
-				},
-				{
-					label: "Counter Hit Ratio",
-					value: "counterHitRatio"
-				}
+		options.append("br");
+		options.append("label")
+			.text("Order: ")
+			.attr("for", "options-order");
+		options.append("br");
+		let orderdropdown = options.append("select")
+			.attr("id", "options-order")
+			.on("change", renderer);
+		let orders = [
+			{label: "Alphabetical"},
+			{label: "Ascending"},
+				{label: "Descending"}
 			];
-			metricdropdown.selectAll("option")
-				.data(metrics)
-				.enter()
-				.append("option")
-				.attr("value", function (d) {
-					return d.value;
-				})
-				.text(function (d) {
-					return d.label;
-				});
-			metricdropdown.property("value", "inputsPerSecond");
+		orderdropdown.selectAll("option")
+			.data(orders)
+			.enter()
+			.append("option")
+			.attr("value", function (d){
+				return d.label;
+			})
+			.text(function (d) {
+				return d.label;
+			});
+		orderdropdown.property("label", "Alphabetical");
 
-
-
-			options.append("br");
-			options.append("label")
-				.text("Order: ")
-				.attr("for", "options-order");
-			options.append("br");
-			let orderdropdown = options.append("select")
-				.attr("id", "options-order")
-				.on("change", renderer);
-			let orders = [
-    			{label: "Alphabetical"},
-    			{label: "Ascending"},
-   				{label: "Descending"}
-  			];
-			orderdropdown.selectAll("option")
-				.data(orders)
-				.enter()
-				.append("option")
-				.attr("value", function (d){
-					return d.label;
-				})
-				.text(function (d) {
-					return d.label;
-				});
-			orderdropdown.property("label", "Alphabetical");
-
-		})
-		.then(renderer);
+	})
+	.then(renderer);
 });
