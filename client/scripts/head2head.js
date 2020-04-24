@@ -8,7 +8,6 @@ d3.select("#nav-head2head").on("click", function () {
 	}
 	let movement = [["", "↑", ""], ["←", "", "→"], ["", "↓", ""]];
 	let renderer = function() {
-		console.log(data);
 		let options = d3.select("#options");
 		options.html("");
 		options.append("table")
@@ -24,21 +23,6 @@ d3.select("#nav-head2head").on("click", function () {
 			})
 			.enter()
 			.append("td")
-			.text(function (d, i) {
-				if (d === "↑" && h_i !== 0) {
-					return d
-				}
-				if (d === "↓" && h_i < data.labels.length - size) {
-					return d
-				}
-				if (d === "←" && w_i !== 0) {
-					return d
-				}
-				if (d === "→" && w_i < data.labels.length - size) {
-					return d
-				}
-				return "";
-			})
 			.style("height", 20)
 			.style("width", 20)
 			.on("click", function(d) {
@@ -55,7 +39,26 @@ d3.select("#nav-head2head").on("click", function () {
 					w_i++;
 				}
 				renderer();
-			});
+			})
+			.filter(function (d) {
+				if (d === "↑" && h_i !== 0) {
+					return true;
+				}
+				if (d === "↓" && h_i < data.labels.length - size) {
+					return true;
+				}
+				if (d === "←" && w_i !== 0) {
+					return true;
+				}
+				if (d === "→" && w_i < data.labels.length - size) {
+					return true;
+				}
+				return false;
+			})
+			.text(function (d, i) {
+				return d;
+			})
+			.attr("class", "active");
 		d3.select("#visualization").html("");
 		let table = d3.select("#visualization")
 			.append("table")
