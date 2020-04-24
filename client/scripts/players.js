@@ -9,6 +9,7 @@ d3.select("#nav-players").on("click", function () {
 	let players = [];
 	let svg = d3.select("#visualization")
 		.append("svg")
+		.attr("id", "players")
 		.attr("width", w)
 		.attr("height", h);
 	let g_text = svg
@@ -57,59 +58,71 @@ d3.select("#nav-players").on("click", function () {
 				.paddingOuter(0.1)
 				.align(0.75);
 
+			let handleMouseOver = function(d) {
+				g_graph.append("text")
+					.attr("id", "tooltip")
+					.attr("x", xScale(d.avg) - padding)
+					.attr("y", yScale(d.name) + yScale.bandwidth() / 2)
+					.style("font-size", yScale.bandwidth())
+					.text(d.avg.toFixed(3));
+			}
+			let handleMouseOut = function(d) {
+				d3.select("#tooltip").remove();
+			}
 			g_graph.selectAll(".bar")
 				.data(playerArray)
 				.enter()
 				.append("rect")
-				.attr("class", "bar");
+				.attr("class", "bar")
 			g_graph.selectAll(".bar")
+				.on("mouseover", handleMouseOver)
+				.on("mouseout", handleMouseOut)
 				.data(playerArray)
 				.transition()
 				.attr("x", 0)
-				.attr("y", function (d, i) {
+				.attr("y", function (d) {
 					return yScale(d.name);
 				})
-				.attr("width", function (d, i) {
+				.attr("width", function (d) {
 					return xScale(d.avg);
 				})
 				.attr("height", yScale.bandwidth())
-				.attr("fill", function (d, i) {
+				.attr("fill", function (d) {
 					if(d.name === player){
 						return "hsl(360, 80%, 50%)"
 					}
 					return "hsl(120, 30%, 50%)"
 				});
-			g_text.selectAll("text")
+			g_text.selectAll(".label")
 				.data(playerArray)
 				.enter()
 				.append("text")
-				.style("dominant-baseline", "middle")
-				.style("text-anchor", "end")
+				.attr("class", "label")
 				.style("font-size", yScale.bandwidth());
-			g_text.selectAll("text")
+			g_text.selectAll(".label")
 				.data(playerArray)
 				.transition()
 				.attr("x", textw - padding)
-				.attr("y", function (d, i) {
+				.attr("y", function (d) {
 					return yScale(d.name) + yScale.bandwidth() / 2;
 				})
-				.text(function (d, i) {
+				.text(function (d) {
 					return `${d.name}`;
 				});
 			svg.select("#xAxis")
 				.call(d3.axisBottom(xScale));
 
 			let zoomUpdater = function() {
-				yScale.range([0, h].map(d => d3.event.transform.applyY(d)));
+				yScale.rangeRound([0, h].map(d => d3.event.transform.applyY(d)));
 				g_graph.selectAll(".bar")
-					.attr("y", function (d, i) {
+					.attr("y", function (d) {
 						return yScale(d.name);
 					})
 					.attr("height", function(d) {
 						return yScale.bandwidth();
 					});
-				g_text.selectAll("text")
-					.attr("y", function (d, i) {
+				g_text.selectAll(".label")
+					.attr("y", function (d) {
 						return yScale(d.name) + yScale.bandwidth() / 2;
 					})
 					.style("font-size", yScale.bandwidth());
@@ -121,6 +134,7 @@ d3.select("#nav-players").on("click", function () {
 				.extent([[0, 0], [w, h]])
 				.on("zoom", zoomUpdater);
 			svg.call(zoom);
+			svg.call(zoom.transform, d3.zoomIdentity);
 		});
 	};
 

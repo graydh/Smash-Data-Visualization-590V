@@ -39,7 +39,8 @@
 	border: 1px solid black;
 }
 
-#visualization > svg > text {
+#visualization > table {
+	border: 1px solid black;
 }
 
 /* Head2Head */
@@ -48,7 +49,6 @@
 	table-layout: fixed;
 	width: fit-content;
 	box-sizing: border-box;
-	border: 1px solid black;
 }
 
 #head2head td {
@@ -85,11 +85,9 @@
 	background-color: aliceblue;
 }
 
-
 /* Games */
 
 #games {
-	border: 1px solid black;
 	border-spacing: 0;
 	box-sizing: border-box;
 }
@@ -98,6 +96,19 @@
 	border: 1px solid black;
 	padding: 10px;
 }
+
 #games img {
 	vertical-align: middle;
+}
+
+/* Players */
+
+#players .label {
+	dominant-baseline: middle;
+	text-anchor: end;
+}
+
+#players #tooltip {
+	dominant-baseline: middle;
+	text-anchor: end;
 }
