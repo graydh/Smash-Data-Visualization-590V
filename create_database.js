@@ -272,6 +272,23 @@ MongoClient.connect("mongodb://127.0.0.1:27017/", {
 			{ $set: { "player2": name[1] } }
 		);
 	}
+	console.log("Renaming tournaments...");
+	let tournaments = [
+		["Club_09122019_Bracket", "Club Singles 09/12/2019"],
+		["Club_10032019_Bracket", "Club Singles 10/03/2019"],
+		["Club_10172019_Bracket", "Club Singles 10/17/2019"],
+		["Club_11072019_Bracket", "Club Singles 11/07/2019"],
+		["Club_11212019_Bracket", "Club Singles 11/21/2019"],
+		["Zoo_Alligator_Singles", "The Alligator Exhibit"],
+		["Zoo_Bear_Singles", "The Bear Exhibit"],
+		["Zoo_Cuttlefish_Singles", "The Cuttlefish Exhibit"]
+	];
+	for (let tournament of tournaments) {
+		await db.collection("sets").updateMany(
+			{ "tournament": tournament[0] },
+			{ $set: { "tournament": tournament[1] } }
+		);
+	}
 	console.log("Done");
 	console.log("Don't forget to correct winners and set fix null sets!");
 	client.close();
