@@ -27,7 +27,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "mongodb": "^3.5.8",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "readline-sync": "^1.4.10",
     "slp-parser-js": "^4.1.0"
   }
