@@ -8,3 +8,9 @@ Instructions:
 4. Import the MongoDB database: `npm run restore`
 5. Run the backend: `npm run server`
 6. Open browser to [localhost:3000](localhost:3000)
+
+Images:
+![Game](https://github.com/graydh/Smash-Data-Visualization-590V/tree/master/images/game.png)
+![Player](https://github.com/graydh/Smash-Data-Visualization-590V/tree/master/images/player.png)
+![Matchup](https://github.com/graydh/Smash-Data-Visualization-590V/tree/master/images/matchup.png)
+![Head2head](https://github.com/graydh/Smash-Data-Visualization-590V/tree/master/images/head2head.png)
