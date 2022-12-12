@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/graydh/Smash-Data-Visualization-590V#readme",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "mongodb": "^3.5.8",
     "node-fetch": "^2.6.0",
     "readline-sync": "^1.4.10",
